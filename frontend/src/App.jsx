@@ -2,24 +2,24 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
+Chart as ChartJS,
+CategoryScale,
+LinearScale,
+BarElement,
+Title,
+Tooltip,
+Legend
 } from "chart.js";
 
 import { Bar } from "react-chartjs-2";
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
+CategoryScale,
+LinearScale,
+BarElement,
+Title,
+Tooltip,
+Legend
 );
 
 const API_URL = "https://breathe-esg-project-r9pd.onrender.com/api";
@@ -66,7 +66,7 @@ console.log(error);
 
 };
 
-const addRecord=()=>{
+const addRecord = async ()=>{
 
 if(
 category.trim()==="" ||
@@ -82,16 +82,27 @@ alert("Quantity must be greater than 0");
 return;
 }
 
-axios.post(
+try{
+
+const response = await axios.post(
 `${API_URL}/emissions/`,
 {
 category: category,
 scope: scope,
-quantity: Number(quantity)
+quantity: parseFloat(quantity),
+normalized_unit:"kgCO2",
+original_unit:"liters",
+emission_value:parseFloat(quantity)*2,
+status:"Pending"
+},
+{
+headers:{
+"Content-Type":"application/json"
 }
-)
+}
+);
 
-.then(()=>{
+console.log(response.data);
 
 alert("Record Added Successfully");
 
@@ -101,15 +112,18 @@ setQuantity("");
 
 loadData();
 
-})
+}
+catch(error){
 
-.catch((error)=>{
+console.log(error.response?.data);
 
-console.log(error.response);
+alert(
+JSON.stringify(
+error.response?.data
+)
+);
 
-alert("Error adding record");
-
-});
+}
 
 };
 
