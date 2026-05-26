@@ -22,6 +22,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL="https://breathe-esg-project-r9pd.onrender.com/api";
+
 function App() {
 
 const [dashboard,setDashboard]=useState({});
@@ -39,17 +41,17 @@ loadData();
 
 const loadData=()=>{
 
-axios.get("https://breathe-esg-project-r9pd.onrender.com/api/dashboard/")
+axios.get(`${API_URL}/dashboard/`)
 .then((response)=>{
 setDashboard(response.data);
 });
 
-axios.get("https://breathe-esg-project-r9pd.onrender.com/api/emissions/")
+axios.get(`${API_URL}/emissions/`)
 .then((response)=>{
 setRecords(response.data);
 });
 
-axios.get("https://breathe-esg-project-r9pd.onrender.com/api/suspicious/")
+axios.get(`${API_URL}/suspicious/`)
 .then((response)=>{
 setSuspicious(response.data);
 });
@@ -61,8 +63,7 @@ const addRecord=()=>{
 if(
 category.trim()==="" ||
 scope.trim()==="" ||
-quantity===""
-){
+quantity===""){
 alert("Fill all fields");
 return;
 }
@@ -73,13 +74,12 @@ return;
 }
 
 axios.post(
-"http://127.0.0.1:8000/api/emissions/",
+`${API_URL}/emissions/`,
 {
 category:category,
 scope:scope,
 quantity:Number(quantity),
 status:"Pending",
-
 normalized_unit:"kgCO2",
 original_unit:"liters",
 emission_value:Number(quantity)*2
@@ -100,11 +100,9 @@ loadData();
 
 .catch((error)=>{
 
-console.log(error.response?.data);
+console.log(error);
 
-alert(
-JSON.stringify(error.response?.data)
-);
+alert("Error adding record");
 
 });
 
@@ -113,7 +111,7 @@ JSON.stringify(error.response?.data)
 const approveRecord=(id)=>{
 
 axios.patch(
-`http://127.0.0.1:8000/api/emissions/${id}/`,
+`${API_URL}/emissions/${id}/`,
 {
 status:"Approved"
 }
@@ -128,7 +126,7 @@ loadData();
 const deleteRecord=(id)=>{
 
 axios.delete(
-`http://127.0.0.1:8000/api/emissions/${id}/`
+`${API_URL}/emissions/${id}/`
 )
 
 .then(()=>{
@@ -209,9 +207,7 @@ color:"white",
 minHeight:"100vh"
 }}>
 
-<h1 style={{
-textAlign:"center"
-}}>
+<h1 style={{textAlign:"center"}}>
 Breathe ESG Dashboard
 </h1>
 
@@ -240,9 +236,7 @@ gap:"60px"
 
 <br/>
 
-<h2 style={{
-textAlign:"center"
-}}>
+<h2 style={{textAlign:"center"}}>
 Add New Record
 </h2>
 
@@ -278,8 +272,7 @@ background:"green",
 color:"white",
 padding:"10px",
 border:"none"
-}}
->
+}}>
 Add
 </button>
 
@@ -291,20 +284,14 @@ style={{
 padding:"10px 20px",
 background:"blue",
 color:"white",
-border:"none",
-borderRadius:"5px",
-display:"block",
-margin:"auto"
-}}
->
+border:"none"
+}}>
 Export Report
 </button>
 
 <hr/>
 
-<h2 style={{
-textAlign:"center"
-}}>
+<h2 style={{textAlign:"center"}}>
 Dashboard Analytics
 </h2>
 
@@ -312,154 +299,8 @@ Dashboard Analytics
 width:"600px",
 margin:"auto"
 }}>
-<Bar
-data={chartData}
-options={options}
-/>
+<Bar data={chartData} options={options}/>
 </div>
-
-<hr/>
-
-<h2 style={{
-textAlign:"center"
-}}>
-Emission Records
-</h2>
-
-<div style={{
-textAlign:"center",
-marginBottom:"20px"
-}}>
-
-<input
-placeholder="Search category..."
-value={search}
-onChange={(e)=>setSearch(e.target.value)}
-/>
-
-</div>
-
-{
-records
-.filter(
-(item)=>
-item.category.toLowerCase()
-.includes(search.toLowerCase())
-&&
-item.quantity<=1000
-)
-
-.map((item)=>(
-
-<div
-key={item.id}
-style={{
-border:"1px solid gray",
-padding:"15px",
-margin:"15px",
-borderRadius:"10px",
-textAlign:"center"
-}}
->
-
-<p><b>Category:</b> {item.category}</p>
-<p><b>Scope:</b> {item.scope}</p>
-<p><b>Quantity:</b> {item.quantity}</p>
-
-<p>
-<b>Status:</b>{" "}
-<span style={{
-color:item.status==="Approved"
-?"lightgreen"
-:"orange"
-}}>
-{item.status}
-</span>
-</p>
-
-{item.status!=="Approved" && (
-
-<button
-onClick={()=>approveRecord(item.id)}
-style={{
-background:"green",
-color:"white",
-padding:"10px",
-border:"none"
-}}
->
-Approve
-</button>
-
-)}
-
-<button
-onClick={()=>deleteRecord(item.id)}
-style={{
-background:"red",
-color:"white",
-padding:"10px",
-border:"none",
-marginLeft:"10px"
-}}
->
-Delete
-</button>
-
-</div>
-
-))
-}
-
-<hr/>
-
-<h2 style={{
-textAlign:"center"
-}}>
-⚠ Suspicious Records
-</h2>
-
-{
-suspicious.map((item)=>(
-
-<div
-key={item.id}
-style={{
-border:"2px solid red",
-padding:"15px",
-margin:"15px",
-borderRadius:"10px",
-textAlign:"center"
-}}
->
-
-<p><b>Category:</b> {item.category}</p>
-<p><b>Quantity:</b> {item.quantity}</p>
-<p><b>Status:</b> {item.status}</p>
-
-<button
-onClick={()=>deleteRecord(item.id)}
-style={{
-background:"red",
-color:"white",
-padding:"10px",
-border:"none"
-}}
->
-Delete
-</button>
-
-</div>
-
-))
-}
-
-<p style={{
-textAlign:"center",
-marginTop:"30px"
-}}>
-Built by Krishna Abhiram
-</p>
 
 </div>
 
