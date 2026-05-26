@@ -22,14 +22,13 @@ ChartJS.register(
   Legend
 );
 
-const API_URL="https://breathe-esg-project-r9pd.onrender.com/api";
+const API_URL = "https://breathe-esg-project-r9pd.onrender.com/api";
 
 function App() {
 
 const [dashboard,setDashboard]=useState({});
 const [records,setRecords]=useState([]);
 const [suspicious,setSuspicious]=useState([]);
-const [search,setSearch]=useState("");
 
 const [category,setCategory]=useState("");
 const [scope,setScope]=useState("");
@@ -44,16 +43,25 @@ const loadData=()=>{
 axios.get(`${API_URL}/dashboard/`)
 .then((response)=>{
 setDashboard(response.data);
+})
+.catch((error)=>{
+console.log(error);
 });
 
 axios.get(`${API_URL}/emissions/`)
 .then((response)=>{
 setRecords(response.data);
+})
+.catch((error)=>{
+console.log(error);
 });
 
 axios.get(`${API_URL}/suspicious/`)
 .then((response)=>{
 setSuspicious(response.data);
+})
+.catch((error)=>{
+console.log(error);
 });
 
 };
@@ -63,7 +71,8 @@ const addRecord=()=>{
 if(
 category.trim()==="" ||
 scope.trim()==="" ||
-quantity===""){
+quantity===""
+){
 alert("Fill all fields");
 return;
 }
@@ -76,13 +85,9 @@ return;
 axios.post(
 `${API_URL}/emissions/`,
 {
-category:category,
-scope:scope,
-quantity:Number(quantity),
-status:"Pending",
-normalized_unit:"kgCO2",
-original_unit:"liters",
-emission_value:Number(quantity)*2
+category: category,
+scope: scope,
+quantity: Number(quantity)
 }
 )
 
@@ -100,37 +105,10 @@ loadData();
 
 .catch((error)=>{
 
-console.log(error);
+console.log(error.response);
 
 alert("Error adding record");
 
-});
-
-};
-
-const approveRecord=(id)=>{
-
-axios.patch(
-`${API_URL}/emissions/${id}/`,
-{
-status:"Approved"
-}
-)
-
-.then(()=>{
-loadData();
-});
-
-};
-
-const deleteRecord=(id)=>{
-
-axios.delete(
-`${API_URL}/emissions/${id}/`
-)
-
-.then(()=>{
-loadData();
 });
 
 };
