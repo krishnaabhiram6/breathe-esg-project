@@ -39,17 +39,17 @@ loadData();
 
 const loadData=()=>{
 
-axios.get("http://127.0.0.1:8000/api/dashboard/")
+axios.get("https://breathe-esg-project-r9pd.onrender.com/api/dashboard/")
 .then((response)=>{
 setDashboard(response.data);
 });
 
-axios.get("http://127.0.0.1:8000/api/emissions/")
+axios.get("https://breathe-esg-project-r9pd.onrender.com/api/emissions/")
 .then((response)=>{
 setRecords(response.data);
 });
 
-axios.get("http://127.0.0.1:8000/api/suspicious/")
+axios.get("https://breathe-esg-project-r9pd.onrender.com/api/suspicious/")
 .then((response)=>{
 setSuspicious(response.data);
 });
