@@ -22,9 +22,9 @@ Tooltip,
 Legend
 );
 
-const API_URL = "https://breathe-esg-project-r9pd.onrender.com/api";
+const API_URL="https://breathe-esg-project-r9pd.onrender.com/api";
 
-function App() {
+function App(){
 
 const [dashboard,setDashboard]=useState({});
 const [records,setRecords]=useState([]);
@@ -33,6 +33,7 @@ const [suspicious,setSuspicious]=useState([]);
 const [category,setCategory]=useState("");
 const [scope,setScope]=useState("");
 const [quantity,setQuantity]=useState("");
+const [search,setSearch]=useState("");
 
 useEffect(()=>{
 loadData();
@@ -43,30 +44,21 @@ const loadData=()=>{
 axios.get(`${API_URL}/dashboard/`)
 .then((response)=>{
 setDashboard(response.data);
-})
-.catch((error)=>{
-console.log(error);
 });
 
 axios.get(`${API_URL}/emissions/`)
 .then((response)=>{
 setRecords(response.data);
-})
-.catch((error)=>{
-console.log(error);
 });
 
 axios.get(`${API_URL}/suspicious/`)
 .then((response)=>{
 setSuspicious(response.data);
-})
-.catch((error)=>{
-console.log(error);
 });
 
 };
 
-const addRecord = async ()=>{
+const addRecord=async()=>{
 
 if(
 category.trim()==="" ||
@@ -77,32 +69,20 @@ alert("Fill all fields");
 return;
 }
 
-if(Number(quantity)<=0){
-alert("Quantity must be greater than 0");
-return;
-}
-
 try{
 
-const response = await axios.post(
+await axios.post(
 `${API_URL}/emissions/`,
 {
-category: category,
-scope: scope,
-quantity: parseFloat(quantity),
+category:category,
+scope:scope,
+quantity:parseFloat(quantity),
 normalized_unit:"kgCO2",
 original_unit:"liters",
 emission_value:parseFloat(quantity)*2,
 status:"Pending"
-},
-{
-headers:{
-"Content-Type":"application/json"
-}
 }
 );
-
-console.log(response.data);
 
 alert("Record Added Successfully");
 
@@ -115,15 +95,36 @@ loadData();
 }
 catch(error){
 
-console.log(error.response?.data);
+console.log(error);
 
-alert(
-JSON.stringify(
-error.response?.data
-)
-);
+alert("Error adding record");
 
 }
+
+};
+
+const approveRecord=(id)=>{
+
+axios.patch(
+`${API_URL}/emissions/${id}/`,
+{
+status:"Approved"
+}
+)
+.then(()=>{
+loadData();
+});
+
+};
+
+const deleteRecord=(id)=>{
+
+axios.delete(
+`${API_URL}/emissions/${id}/`
+)
+.then(()=>{
+loadData();
+});
 
 };
 
@@ -135,7 +136,8 @@ encodeURIComponent(
 JSON.stringify(records,null,2)
 );
 
-const downloadLink=document.createElement("a");
+const downloadLink=
+document.createElement("a");
 
 downloadLink.setAttribute(
 "href",
@@ -151,14 +153,21 @@ downloadLink.click();
 
 };
 
+const filteredRecords=
+records.filter((record)=>
+record.category
+.toLowerCase()
+.includes(search.toLowerCase())
+);
+
 const chartData={
 labels:["Pending","Approved"],
 datasets:[
 {
 label:"Emission Records",
 data:[
-dashboard.pending_records || 0,
-dashboard.approved_records || 0
+dashboard.pending_records||0,
+dashboard.approved_records||0
 ],
 backgroundColor:[
 "orange",
@@ -199,7 +208,9 @@ color:"white",
 minHeight:"100vh"
 }}>
 
-<h1 style={{textAlign:"center"}}>
+<h1 style={{
+textAlign:"center"
+}}>
 Breathe ESG Dashboard
 </h1>
 
@@ -211,79 +222,84 @@ gap:"60px"
 
 <div>
 <h2>Total</h2>
-<h1>{dashboard.total_records || 0}</h1>
+<h1>{dashboard.total_records||0}</h1>
 </div>
 
 <div>
 <h2>Pending</h2>
-<h1>{dashboard.pending_records || 0}</h1>
+<h1>{dashboard.pending_records||0}</h1>
 </div>
 
 <div>
 <h2>Approved</h2>
-<h1>{dashboard.approved_records || 0}</h1>
+<h1>{dashboard.approved_records||0}</h1>
 </div>
 
 </div>
 
 <br/>
 
-<h2 style={{textAlign:"center"}}>
+<h2 style={{
+textAlign:"center"
+}}>
 Add New Record
 </h2>
 
 <div style={{
 display:"flex",
 justifyContent:"center",
-gap:"10px",
-marginBottom:"20px"
+gap:"10px"
 }}>
 
 <input
 placeholder="Category"
 value={category}
-onChange={(e)=>setCategory(e.target.value)}
+onChange={(e)=>
+setCategory(e.target.value)}
 />
 
 <input
 placeholder="Scope"
 value={scope}
-onChange={(e)=>setScope(e.target.value)}
+onChange={(e)=>
+setScope(e.target.value)}
 />
 
 <input
 placeholder="Quantity"
 value={quantity}
-onChange={(e)=>setQuantity(e.target.value)}
+onChange={(e)=>
+setQuantity(e.target.value)}
 />
 
 <button
 onClick={addRecord}
 style={{
 background:"green",
-color:"white",
-padding:"10px",
-border:"none"
+color:"white"
 }}>
 Add
 </button>
 
 </div>
 
+<br/>
+
 <button
 onClick={exportData}
 style={{
-padding:"10px 20px",
 background:"blue",
 color:"white",
-border:"none"
+padding:"10px"
 }}>
 Export Report
 </button>
 
 <hr/>
 
-<h2 style={{textAlign:"center"}}>
+<h2 style={{
+textAlign:"center"
+}}>
 Dashboard Analytics
 </h2>
 
@@ -291,8 +307,87 @@ Dashboard Analytics
 width:"600px",
 margin:"auto"
 }}>
-<Bar data={chartData} options={options}/>
+<Bar
+data={chartData}
+options={options}
+/>
 </div>
+
+<hr/>
+
+<h2>
+Emission Records
+</h2>
+
+<input
+placeholder="Search Category"
+value={search}
+onChange={(e)=>
+setSearch(e.target.value)}
+style={{
+padding:"10px",
+marginBottom:"20px"
+}}
+/>
+
+<table
+border="1"
+width="100%"
+style={{
+background:"white",
+color:"black"
+}}>
+
+<thead>
+
+<tr>
+<th>Category</th>
+<th>Scope</th>
+<th>Quantity</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{filteredRecords.map((record)=>(
+
+<tr key={record.id}>
+
+<td>{record.category}</td>
+<td>{record.scope}</td>
+<td>{record.quantity}</td>
+<td>{record.status}</td>
+
+<td>
+
+<button
+onClick={()=>
+approveRecord(record.id)
+}
+>
+Approve
+</button>
+
+<button
+onClick={()=>
+deleteRecord(record.id)
+}
+>
+Delete
+</button>
+
+</td>
+
+</tr>
+
+))}
+
+</tbody>
+
+</table>
 
 </div>
 
