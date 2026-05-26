@@ -363,18 +363,31 @@ color:"black"
 
 <td>
 
+{record.status!=="Approved" && (
+
 <button
 onClick={()=>
 approveRecord(record.id)
 }
+style={{
+background:"green",
+color:"white",
+marginRight:"5px"
+}}
 >
 Approve
 </button>
+
+)}
 
 <button
 onClick={()=>
 deleteRecord(record.id)
 }
+style={{
+background:"red",
+color:"white"
+}}
 >
 Delete
 </button>
